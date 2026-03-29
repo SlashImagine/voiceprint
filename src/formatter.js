@@ -112,6 +112,175 @@ ${aiPrompt}
 }
 
 /**
+ * Format as a drop-in VOICE.md — a complete brand voice operating manual
+ * that makes any AI indistinguishable from the brand's real copywriters.
+ */
+export function formatVoiceFile(profile) {
+  const { brand, url, tone, vocabulary, structure, personality, guidelines, aiPrompt } = profile;
+  const d = Object.fromEntries(tone.dimensions.map((t) => [t.name, t.score]));
+
+  // Build the identity section
+  const archetypes = personality.archetypes.join(" + ");
+  const traits = personality.traits.join(", ");
+
+  // Tone direction descriptions
+  const toneDirections = tone.dimensions
+    .filter((t) => Math.abs(t.score - 5) >= 1)
+    .map((t) => {
+      const left = t.left || t.name.split(" ↔ ")[0];
+      const right = t.right || t.name.split(" ↔ ")[1];
+      const direction = t.score >= 6 ? right.toLowerCase() : left.toLowerCase();
+      const intensity = Math.abs(t.score - 5);
+      const qualifier = intensity >= 4 ? "extremely" : intensity >= 3 ? "very" : intensity >= 2 ? "notably" : "slightly";
+      return `- **${qualifier} ${direction}** (${t.score}/10)`;
+    })
+    .join("\n");
+
+  // Power vocabulary
+  const powerWords = vocabulary.powerWords.slice(0, 15).map((w) => w.word);
+  const sigPhrases = (vocabulary.signaturePhrases || []).slice(0, 5).map((p) => `"${p.phrase}"`);
+
+  // Sentence style
+  const sentenceStyle = structure.averageSentenceLength < 10
+    ? "Ultra-short. Punchy. Fragments are fine. Every word earns its place."
+    : structure.averageSentenceLength < 15
+    ? "Short to medium. Direct and clear. No wasted words."
+    : structure.averageSentenceLength < 20
+    ? "Medium length. Room for explanation but still focused."
+    : "Longer, more detailed sentences. Room for nuance and depth.";
+
+  // Reading level instruction
+  const readingInstruction = structure.readingLevel.grade <= 6
+    ? "Write at an elementary reading level. Short words. Short sentences. A 12-year-old should understand every line."
+    : structure.readingLevel.grade <= 8
+    ? "Write at a middle school reading level. Clear and accessible without being dumbed down."
+    : structure.readingLevel.grade <= 10
+    ? "Write at a high school reading level. Sophisticated but not academic."
+    : "Write at a college reading level. Technical depth and complex ideas welcome.";
+
+  // Build special patterns
+  const specialRules = [];
+
+  if (d["Conventional ↔ Irreverent"] >= 6) {
+    specialRules.push("**Be irreverent.** This brand doesn't play by the rules. Subvert expectations. If something sounds too safe, push it further. The brand voice should feel like it could get you in trouble — that's the point.");
+  }
+  if (d["Safe ↔ Provocative"] >= 6) {
+    specialRules.push("**Be provocative.** Use dark humor, shock value, and bold claims. Don't water things down. Don't add disclaimers. The brand leans INTO controversy, not away from it.");
+  }
+  if (d["Serious ↔ Playful"] >= 7 && d["Conventional ↔ Irreverent"] >= 5) {
+    specialRules.push("**Comedy is the brand.** Absurdist humor, irony, unexpected turns. The goal is entertainment first, selling second. If copy doesn't make someone smile or say 'WTF,' it's not done.");
+  }
+  if (d["Formal ↔ Casual"] >= 7) {
+    specialRules.push("**Talk like a human.** Use contractions. Use slang when it fits. Write like a text from a funny friend, not a brand memo.");
+  }
+  if (d["Formal ↔ Casual"] <= 3) {
+    specialRules.push("**Maintain gravitas.** This brand is deliberate and polished. No slang, no shortcuts. Every word is chosen with precision.");
+  }
+  if (d["Reserved ↔ Enthusiastic"] >= 7) {
+    specialRules.push("**Bring energy.** Exclamation points are welcome. Superlatives are fine. This brand is genuinely excited and it shows.");
+  }
+  if (d["Corporate ↔ Human"] <= 3) {
+    specialRules.push("**Stay institutional.** This brand speaks as a company, not a person. Formal constructions, third-person references, measured language.");
+  }
+  if (d["Long-winded ↔ Concise"] >= 8) {
+    specialRules.push("**Ruthlessly concise.** If you can cut a word, cut it. If you can cut a sentence, cut it. Fragments > full sentences. Punchlines > paragraphs.");
+  }
+
+  // Check for death/violence branding
+  const deathWords = powerWords.filter((w) => /^(death|murder|kill|skull|destroy|doom|slay|dead)$/i.test(w));
+  if (deathWords.length > 0 || d["Safe ↔ Provocative"] >= 6) {
+    specialRules.push(`**Death and destruction are part of the voice.** Words like ${deathWords.length ? deathWords.map(w => `"${w}"`).join(", ") : '"death," "murder," "kill"'} aren't accidents — they're brand pillars. Use them freely and without apology.`);
+  }
+
+  // Questions style
+  if (structure.questionRatio >= 0.05) {
+    specialRules.push(`**Use rhetorical questions.** About ${Math.round(structure.questionRatio * 100)}% of this brand's sentences are questions — use them to provoke, challenge, or create intrigue.`);
+  }
+
+  // CTA style
+  if (structure.imperativeRatio >= 0.08) {
+    specialRules.push(`**Command the reader.** ${Math.round(structure.imperativeRatio * 100)}% of sentences are imperatives. This brand tells people what to do — directly, confidently, unapologetically.`);
+  }
+
+  const specialBlock = specialRules.length
+    ? specialRules.map((r) => r).join("\n\n")
+    : "No unusual patterns detected — this brand uses a conventional voice.";
+
+  return `# VOICE.md — ${brand}
+
+> Drop this file into any AI chat, agent, or system prompt. It will write as ${brand}.
+
+---
+
+## Identity
+
+- **Brand:** ${brand}
+- **Source:** ${url}
+- **Archetypes:** ${archetypes}
+- **Traits:** ${traits}
+- **One-line summary:** ${profile.summary}
+
+---
+
+## How ${brand} Sounds
+
+${toneDirections}
+
+---
+
+## Writing Rules
+
+### Sentence Structure
+${sentenceStyle}
+- Average sentence length: **${structure.averageSentenceLength} words**
+- ${readingInstruction}
+
+### Vocabulary
+- **Use these words naturally:** ${powerWords.join(", ")}
+${sigPhrases.length ? `- **Echo these phrases:** ${sigPhrases.join(", ")}` : ""}
+${vocabulary.jargon.length ? `- **Industry terms this brand uses:** ${vocabulary.jargon.join(", ")}` : ""}
+- Vocabulary richness: ${vocabulary.vocabularyRichness} (${vocabulary.vocabularyRichness >= 0.3 ? "diverse — use varied language" : vocabulary.vocabularyRichness >= 0.15 ? "moderate — mix familiar and fresh" : "focused — repeat key terms, keep it tight"})
+
+### ✅ Always
+${guidelines.dos.map((d) => `- ${d}`).join("\n")}
+
+### ❌ Never
+${guidelines.donts.map((d) => `- ${d}`).join("\n")}
+
+---
+
+## Brand-Specific Patterns
+
+${specialBlock}
+
+---
+
+## The Voice Test
+
+Before publishing anything as ${brand}, ask:
+
+1. **Would a fan recognize this as ${brand}?** If it could be any brand, rewrite it.
+2. **Does it match the archetypes?** (${archetypes}) — if not, push it in that direction.
+3. **Does it follow the tone scores?** Check the spectrum above. If the brand is irreverent (${d["Conventional ↔ Irreverent"]?.toFixed(1) || "N/A"}/10), did you actually break a rule? If it's provocative (${d["Safe ↔ Provocative"]?.toFixed(1) || "N/A"}/10), did you actually provoke?
+4. **Read it out loud.** Does it sound like ${brand}, or does it sound like ChatGPT? If the latter, add more of the traits: ${traits}.
+
+---
+
+## System Prompt (for AI agents)
+
+Paste this into any LLM system prompt to activate the voice:
+
+\`\`\`
+${aiPrompt}
+\`\`\`
+
+---
+
+*Generated by [brand-voice](https://github.com/SlashImagine/brand-voice) — reverse-engineer any brand's voice in seconds.*
+`;
+}
+
+/**
  * Format as JSON string.
  */
 export function formatJSON(profile) {

@@ -1,21 +1,23 @@
 #!/usr/bin/env node
 
 import { parseArgs } from "node:util";
-import { analyzeBrandVoice, formatMarkdown, formatJSON } from "../src/index.js";
+import { analyzeBrandVoice, formatMarkdown, formatJSON, formatVoiceFile } from "../src/index.js";
 
 const help = `
   brand-voice — Reverse-engineer any brand's voice into an AI-ready guide.
 
   Usage:
     brand-voice <url>                          Analyze a website's brand voice
+    brand-voice <url> --voice                  Generate a drop-in VOICE.md file
     brand-voice <url> --format json            Output as JSON
-    brand-voice <url> --pages 5                Crawl up to 5 pages (default: 3)
-    brand-voice <url> --output brand.md        Save to file
+    brand-voice <url> --pages 5                Crawl up to 5 pages (default: 8)
+    brand-voice <url> --output voice.md        Save to file
     brand-voice compare <url1> <url2>          Compare two brands side-by-side
 
   Options:
-    --format, -f    Output format: markdown (default) | json
-    --pages, -p     Max pages to crawl (default: 3, max: 10)
+    --voice         Generate a drop-in VOICE.md (the killer feature)
+    --format, -f    Output format: markdown (default) | json | voice
+    --pages, -p     Max pages to crawl (default: 8, max: 20)
     --output, -o    Write output to file instead of stdout
     --verbose, -v   Show crawling progress
     --help, -h      Show this help
@@ -23,7 +25,8 @@ const help = `
 
   Examples:
     brand-voice https://stripe.com
-    brand-voice https://notion.so --pages 5 --output notion-voice.md
+    brand-voice https://liquiddeath.com --voice --output voice.md
+    brand-voice https://notion.so --pages 10 --format json
     brand-voice compare https://stripe.com https://square.com
 `;
 
@@ -32,7 +35,8 @@ try {
     allowPositionals: true,
     options: {
       format: { type: "string", short: "f", default: "markdown" },
-      pages: { type: "string", short: "p", default: "3" },
+      voice: { type: "boolean", default: false },
+      pages: { type: "string", short: "p", default: "8" },
       output: { type: "string", short: "o" },
       verbose: { type: "boolean", short: "v", default: false },
       help: { type: "boolean", short: "h", default: false },
@@ -51,9 +55,12 @@ try {
     process.exit(0);
   }
 
+  // --voice flag overrides format
+  const format = values.voice ? "voice" : values.format;
+
   const isCompare = positionals[0] === "compare";
   const urls = isCompare ? positionals.slice(1) : [positionals[0]];
-  const maxPages = Math.min(parseInt(values.pages) || 3, 10);
+  const maxPages = Math.min(parseInt(values.pages) || 8, 20);
 
   if (urls.length === 0 || (isCompare && urls.length < 2)) {
     console.error(isCompare ? "Error: compare needs two URLs" : "Error: provide a URL");
@@ -68,7 +75,7 @@ try {
     log(`Analyzing ${urls[1]}...`);
     const b = await analyzeBrandVoice(urls[1], { maxPages, log });
 
-    const output = values.format === "json"
+    const output = format === "json"
       ? JSON.stringify({ brands: [a, b] }, null, 2)
       : formatComparison(a, b);
 
@@ -76,9 +83,19 @@ try {
   } else {
     log(`Crawling ${urls[0]}...`);
     const result = await analyzeBrandVoice(urls[0], { maxPages, log });
-    const output = values.format === "json"
-      ? formatJSON(result)
-      : formatMarkdown(result);
+
+    let output;
+    switch (format) {
+      case "json":
+        output = formatJSON(result);
+        break;
+      case "voice":
+        output = formatVoiceFile(result);
+        break;
+      default:
+        output = formatMarkdown(result);
+    }
+
     await write(output, values.output);
   }
 } catch (err) {
