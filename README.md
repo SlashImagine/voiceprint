@@ -6,7 +6,7 @@ Point it at any URL. Get a deployable `VOICE.md` in seconds — archetypes, tone
 
 Zero API keys. Zero dependencies. Zero cost.
 
-🌐 **[Website](https://slashimagine.github.io/brand-voice/)** · 📦 **[npm](https://www.npmjs.com/package/voiceprint)**
+🌐 **[Website](https://slashimagine.github.io/voiceprint/)** · 📦 **[npm](https://www.npmjs.com/package/voiceprint)**
 
 ---
 
@@ -147,4 +147,4 @@ MIT
 
 ---
 
-Built by [Ad Machine](https://admachine.xyz) · [Star on GitHub](https://github.com/SlashImagine/brand-voice)
+Built by [Ad Machine](https://admachine.xyz) · [Star on GitHub](https://github.com/SlashImagine/voiceprint)

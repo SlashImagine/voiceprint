@@ -40,9 +40,9 @@
   "engines": {
     "node": ">=18"
   },
-  "homepage": "https://slashimagine.github.io/brand-voice/",
+  "homepage": "https://slashimagine.github.io/voiceprint/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SlashImagine/brand-voice.git"
+    "url": "https://github.com/SlashImagine/voiceprint.git"
   }
 }
