@@ -5,19 +5,19 @@ import { analyzeBrandVoice } from "../src/index.js";
 import { formatMarkdown, formatJSON, formatComparison } from "../src/formatter.js";
 
 const help = `
-  voiceprint — Reverse-engineer any brand's voice into a deployable identity file.
+  voiceprint — Reverse-engineer any brand's voice into a deployable VOICE.md.
 
   Usage:
-    voiceprint <url>                          Analyze a brand's voice
-    voiceprint <url> --voice                  Output a deployable VOICE.md
-    voiceprint <url> --output VOICE.md        Save to file
+    voiceprint <url>                          Analyze brand → outputs VOICE.md (default)
+    voiceprint <url> --output VOICE.md        Save VOICE.md to file
     voiceprint <url> --format json            Output raw JSON
+    voiceprint <url> --analytics              Analytics/stats view instead of VOICE.md
     voiceprint <url> --pages 10               Crawl more pages (default: 8)
     voiceprint compare <url1> <url2>          Compare two brands side-by-side
 
   Options:
-    --voice, -V       Output deployable VOICE.md (drop into any project/AI tool)
-    --format, -f      Output format: markdown (default) | json | voice
+    --analytics, -a   Output analytics view instead of VOICE.md
+    --format, -f      Output format: voice (default) | markdown | json
     --pages, -p       Max pages to crawl (default: 8, max: 20)
     --output, -o      Write output to file instead of stdout
     --verbose, -v     Show crawling progress
@@ -40,8 +40,8 @@ try {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
-      voice: { type: "boolean", short: "V", default: false },
-      format: { type: "string", short: "f", default: "markdown" },
+      analytics: { type: "boolean", short: "a", default: false },
+      format: { type: "string", short: "f", default: "voice" },
       pages: { type: "string", short: "p", default: "8" },
       output: { type: "string", short: "o" },
       verbose: { type: "boolean", short: "v", default: false },
@@ -64,7 +64,8 @@ try {
   const isCompare = positionals[0] === "compare";
   const urls = isCompare ? positionals.slice(1) : [positionals[0]];
   const maxPages = Math.min(parseInt(values.pages) || 8, 20);
-  const wantVoiceDoc = values.voice || values.format === "voice";
+  // VOICE.md is now the default. Use --analytics or --format markdown for the old stats view.
+  const wantVoiceDoc = !values.analytics && values.format !== "markdown" && values.format !== "json";
 
   if (urls.length === 0 || (isCompare && urls.length < 2)) {
     console.error(isCompare ? "Error: compare needs two URLs" : "Error: provide a URL");
@@ -91,8 +92,8 @@ try {
     let output;
     if (wantVoiceDoc) {
       output = result.voiceDoc;
-      // If no explicit output file and --voice flag, suggest a filename
-      if (!values.output && values.voice) {
+      // Suggest a save filename when printing to stdout
+      if (!values.output) {
         const brandSlug = result.brand.toLowerCase().replace(/[^a-z0-9]/g, "-");
         process.stderr.write(`\n  💾 Tip: save with --output ${brandSlug}-VOICE.md\n\n`);
       }
