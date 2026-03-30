@@ -1,4 +1,4 @@
-/* ── voiceprint landing — interactions ── */
+/* ── tonethief landing — interactions ── */
 
 // Terminal typewriter
 const SEQUENCES = [

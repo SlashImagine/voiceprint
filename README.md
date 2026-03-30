@@ -1,18 +1,18 @@
 # tonethief
 
-> Steal any brand's voice from their website. Deployable VOICE.md in seconds. Zero deps, zero API keys.
+> Steal any brand's voice from their website. Get a deployable `VOICE.md` in seconds. Zero deps. Zero API keys.
 
-Point it at any URL. Get a deployable `VOICE.md` in seconds — archetypes, tone spectrum, vocabulary DNA, and a copy-paste AI prompt. Zero dependencies. Zero API keys.
+Point it at any URL. Get back archetypes, tone spectrum, vocabulary DNA, writing rules, example copy, and a copy-paste AI system prompt — all packaged as a `VOICE.md` you can drop into any project, agent, or LLM.
 
-**🌐 [voiceprint.sh](https://slashimagine.github.io/tonethief/) · [View Demo](https://github.com/SlashImagine/tonethief/raw/gh-pages/demo.mp4)**
+**🌐 [tonethief.xyz](https://slashimagine.github.io/tonethief/) · [View Demo](https://github.com/SlashImagine/tonethief/raw/gh-pages/demo.mp4) · [npm](https://www.npmjs.com/package/tonethief)**
 
 ---
 
 ## The output isn't a report. It's a `VOICE.md`.
 
-Most tools give you analytics. voiceprint gives you something you can actually use — a deployable brand identity file.
+Most tools give you analytics. tonethief gives you something you can actually use — a **deployable brand identity file**.
 
-Drop `VOICE.md` into any project, AI agent, or system prompt. Your AI will write indistinguishably from that brand.
+Drop `VOICE.md` into any project, AI agent, or system prompt. Your AI writes indistinguishably from that brand.
 
 Think `SOUL.md` — but for any company on the internet.
 
@@ -21,27 +21,25 @@ Think `SOUL.md` — but for any company on the internet.
 ## Quick start
 
 ```bash
-# No install required
-npx tonethief https://liquiddeath.com --voice
+# No install — just run it
+npx tonethief https://liquiddeath.com
 
 # Save to file
-npx tonethief https://yourbrand.com --voice --output VOICE.md
+npx tonethief https://yourbrand.com --output VOICE.md
 
-# Compare two brands
+# Compare two brands side-by-side
 npx tonethief compare stripe.com square.com
 
-# Raw analytics view
-npx tonethief https://stripe.com
+# Analytics view (stats/scores instead of VOICE.md)
+npx tonethief https://stripe.com --analytics
 
-# JSON output for pipelines
+# JSON for pipelines
 npx tonethief https://notion.so --format json
 ```
 
 ---
 
 ## What you get
-
-### `--voice` — Deployable `VOICE.md`
 
 ```markdown
 # Liquid Death — VOICE.md
@@ -74,26 +72,6 @@ The Outlaw · The Rebel · The Anti-Hero · The Jester
 
 See [`examples/liquid-death-VOICE.md`](examples/liquid-death-VOICE.md) for the full output.
 
-### Analytics view (default)
-
-```
-$ npx tonethief https://liquiddeath.com
-
-🎙️  Brand Voice Profile: Liquid Death
-
-Archetypes:  The Outlaw · The Rebel · The Anti-Hero · The Jester
-Traits:      provocative · irreverent · witty · direct
-
-Earnest      ██████████  Irreverent   10.0/10
-Humorous     ██████░░░░               6.1/10
-Human        ███████░░░               6.8/10
-Active       ███████░░░               6.7/10
-Concise      ███████░░░               7.0/10
-
-Reading level:  Elementary (Grade 2) · avg 13.3 words/sentence
-Power words:    death · murder · skull · evil · savage · thirst
-```
-
 ---
 
 ## 12 personality archetypes
@@ -120,29 +98,52 @@ Power words:    death · murder · skull · evil · savage · thirst
 Each dimension scored 1–10:
 
 - **Formal ↔ Casual** — contractions, slang, register
-- **Serious ↔ Playful** — humor signals, emoji, energy
+- **Serious ↔ Playful** — humor signals, energy
 - **Technical ↔ Accessible** — jargon load, readability
 - **Reserved ↔ Enthusiastic** — exclamations, superlatives
-- **Corporate ↔ Human** — "you/we" vs corporate buzzwords
+- **Corporate ↔ Human** — "you/we" vs buzzwords
 - **Passive ↔ Active** — voice construction analysis
 - **Vague ↔ Specific** — numbers, concrete examples
 - **Long-winded ↔ Concise** — avg sentence length
-- **Earnest ↔ Irreverent** — dark language, anti-establishment signals *(new)*
-- **Dry ↔ Humorous** — absurdist, wit, rhetorical patterns *(new)*
+- **Earnest ↔ Irreverent** — dark language, anti-establishment signals
+- **Dry ↔ Humorous** — absurdist logic, wit, rhetorical patterns
+
+---
+
+## CLI
+
+```
+Usage:
+  tonethief <url>                     Output VOICE.md (default)
+  tonethief <url> --output VOICE.md   Save to file
+  tonethief <url> --analytics         Analytics/scores view
+  tonethief <url> --format json       Raw JSON output
+  tonethief <url> --pages 10          Crawl more pages (default: 8, max: 20)
+  tonethief compare <url1> <url2>     Side-by-side brand diff
+  tonethief compare <url1> <url2> --format json
+
+Options:
+  --analytics, -a   Scores/stats view instead of VOICE.md
+  --format, -f      voice (default) | markdown | json
+  --pages, -p       Pages to crawl (default: 8)
+  --output, -o      Write output to file
+  --verbose, -v     Show crawl progress
+```
 
 ---
 
 ## Install
 
 ```bash
-# npx (no install)
+# npx — no install needed
 npx tonethief <url>
 
-# global install
+# Global install
 npm install -g tonethief
 
-# from source
+# From source
 git clone https://github.com/SlashImagine/tonethief
+cd tonethief
 node bin/cli.js <url>
 ```
 
@@ -150,54 +151,33 @@ node bin/cli.js <url>
 
 ---
 
-## CLI options
-
-```
-Usage:
-  voiceprint <url>                    Analyze brand voice
-  voiceprint <url> --voice            Output deployable VOICE.md
-  voiceprint <url> --output VOICE.md  Save to file
-  voiceprint <url> --format json      Raw JSON output
-  voiceprint <url> --pages 10         Crawl more pages (default: 8)
-  voiceprint compare <url1> <url2>    Side-by-side brand diff
-
-Options:
-  --voice, -V     Deployable VOICE.md (drop into any project/AI tool)
-  --format, -f    markdown (default) | json | voice
-  --pages, -p     Pages to crawl, max 20 (default: 8)
-  --output, -o    Write to file
-  --verbose, -v   Show crawl progress
-```
-
----
-
 ## Examples
 
-See the [`examples/`](examples/) directory:
-
-- [`liquid-death-VOICE.md`](examples/liquid-death-VOICE.md) — Full VOICE.md for Liquid Death
+- [`examples/liquid-death-VOICE.md`](examples/liquid-death-VOICE.md) — Liquid Death brand identity file
 
 ---
 
 ## How it works
 
-1. **Crawl** — Fetches up to 8 pages, prioritizing `/about`, `/story`, `/mission`, `/manifesto`, `/blog`. Nav and header copy included — that's where taglines live.
+1. **Crawl** — Fetches up to 8 pages, prioritizing `/about`, `/story`, `/manifesto`, `/blog`. Nav and header copy included — that's where taglines live.
 2. **Analyze** — Runs 10-dimension tone analysis using linguistic heuristics. No AI required.
-3. **Generate** — Produces archetypes, guidelines, vocabulary DNA, example copy, and an AI-ready system prompt.
+3. **Generate** — Produces archetypes, vocabulary DNA, writing rules, example copy, and an AI-ready system prompt — packaged as VOICE.md.
 
-Zero network calls beyond the target website. Runs entirely locally.
+Runs entirely locally. Zero network calls beyond the target website.
 
 ---
 
-## Why voiceprint gets Liquid Death right
+## Why tonethief gets Liquid Death right
 
-Before v2, the tool returned *"The Analyst, The Minimalist — serious, warm, concise"* for Liquid Death.
+The original tool returned *"The Analyst, The Minimalist — serious, warm, concise"* for Liquid Death. That's completely wrong.
 
-The fix:
-- **Nav/header tags back in the crawl** — "Murder Your Thirst" lives in the header. Stripping it kills the signal.
-- **8 pages default** (was 3) — brand personality lives in `/about` and the manifesto, not the product listing.
-- **New archetypes** — The Outlaw, The Rebel, The Anti-Hero, The Jester. The old set had no concept of irreverence.
+**The fix:**
+- **Nav/header back in crawl** — "Murder Your Thirst" lives in the nav. Stripping it kills the signal.
+- **8 pages default** (was 3) — brand personality lives in `/about` and manifestos, not product listings.
+- **New archetypes** — The Outlaw, The Rebel, The Anti-Hero, The Jester. The old system had zero concept of irreverence.
 - **New tone dimensions** — `Earnest ↔ Irreverent` + `Dry ↔ Humorous`. Liquid Death now scores 10/10 Irreverent.
+
+Result: `The Outlaw · The Rebel · The Anti-Hero · The Jester`
 
 ---
 

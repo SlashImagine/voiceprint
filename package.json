@@ -1,7 +1,7 @@
 {
   "name": "tonethief",
-  "version": "1.0.0",
-  "description": "Reverse-engineer any brand voice into a deployable VOICE.md. Archetypes, tone spectrum, vocabulary DNA, and a copy-paste AI prompt. Zero dependencies.",
+  "version": "2.0.0",
+  "description": "Steal any brand's voice from their website. Deployable VOICE.md in seconds. Zero dependencies, zero API keys.",
   "type": "module",
   "bin": {
     "tonethief": "./bin/cli.js",
@@ -15,14 +15,19 @@
     "bin/",
     "src/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "examples/"
   ],
   "scripts": {
     "test": "node --test test/*.test.js",
     "start": "node bin/cli.js"
   },
   "keywords": [
+    "tonethief",
     "brand-voice",
+    "voice-md",
+    "brand-identity",
+    "ai-copywriting",
     "brand",
     "voice",
     "tone",
@@ -32,12 +37,7 @@
     "content",
     "style-guide",
     "brand-guidelines",
-    "voiceprint",
-    "brand-identity",
-    "voice-md",
-    "soul-md",
-    "brand-guidelines",
-    "ai-copywriting"
+    "soul-md"
   ],
   "author": "Ad Machine <hello@admachine.xyz>",
   "license": "MIT",

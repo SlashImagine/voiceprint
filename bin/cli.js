@@ -5,48 +5,49 @@ import { analyzeBrandVoice } from "../src/index.js";
 import { formatMarkdown, formatJSON, formatComparison } from "../src/formatter.js";
 
 const help = `
-  voiceprint — Reverse-engineer any brand's voice into a deployable identity file.
+  tonethief — Steal any brand's voice. Outputs a deployable VOICE.md.
 
   Usage:
-    tonethief <url>                          Analyze a brand's voice
-    tonethief <url> --voice                  Output a deployable VOICE.md
-    tonethief <url> --output VOICE.md        Save to file
-    tonethief <url> --format json            Output raw JSON
-    tonethief <url> --pages 10               Crawl more pages (default: 8)
-    tonethief compare <url1> <url2>          Compare two brands side-by-side
+    tonethief <url>                     Output VOICE.md (default)
+    tonethief <url> --output VOICE.md   Save to file
+    tonethief <url> --analytics         Scores/analytics view instead of VOICE.md
+    tonethief <url> --format json       Raw JSON output
+    tonethief <url> --pages 10          Crawl more pages (default: 8, max: 20)
+    tonethief compare <url1> <url2>     Side-by-side brand comparison
 
   Options:
-    --voice, -V       Output deployable VOICE.md (drop into any project/AI tool)
-    --format, -f      Output format: markdown (default) | json | voice
-    --pages, -p       Max pages to crawl (default: 8, max: 20)
-    --output, -o      Write output to file instead of stdout
-    --verbose, -v     Show crawling progress
+    --analytics, -a   Scores/stats view instead of VOICE.md
+    --format, -f      voice (default) | markdown | json
+    --pages, -p       Pages to crawl (default: 8, max: 20)
+    --output, -o      Write output to file
+    --verbose, -v     Show crawl progress
     --help, -h        Show this help
     --version         Show version
 
   Examples:
-    voiceprint https://liquiddeath.com --voice --output VOICE.md
-    voiceprint https://stripe.com
+    tonethief https://liquiddeath.com
+    tonethief https://yourbrand.com --output VOICE.md
     tonethief compare https://stripe.com https://square.com
-    voiceprint https://notion.so --pages 10 --format json
+    tonethief https://notion.so --analytics
+    tonethief https://stripe.com --format json
 
   What is a VOICE.md?
     A deployable brand identity file. Drop it into any project, AI agent,
-    or system prompt and your AI will write indistinguishably from that brand.
-    Think SOUL.md but for any company on the internet.
+    or system prompt and your AI writes indistinguishably from that brand.
+    Think SOUL.md — but for any company on the internet.
 `;
 
 try {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
-      voice: { type: "boolean", short: "V", default: false },
-      format: { type: "string", short: "f", default: "markdown" },
-      pages: { type: "string", short: "p", default: "8" },
-      output: { type: "string", short: "o" },
-      verbose: { type: "boolean", short: "v", default: false },
-      help: { type: "boolean", short: "h", default: false },
-      version: { type: "boolean", default: false },
+      analytics: { type: "boolean", short: "a", default: false },
+      format:    { type: "string",  short: "f", default: "voice" },
+      pages:     { type: "string",  short: "p", default: "8" },
+      output:    { type: "string",  short: "o" },
+      verbose:   { type: "boolean", short: "v", default: false },
+      help:      { type: "boolean", short: "h", default: false },
+      version:   { type: "boolean",             default: false },
     },
   });
 
@@ -64,10 +65,14 @@ try {
   const isCompare = positionals[0] === "compare";
   const urls = isCompare ? positionals.slice(1) : [positionals[0]];
   const maxPages = Math.min(parseInt(values.pages) || 8, 20);
-  const wantVoiceDoc = values.voice || values.format === "voice";
+
+  // VOICE.md is the default. --analytics or --format markdown/json opts out.
+  const wantVoiceDoc = !values.analytics
+    && values.format !== "markdown"
+    && values.format !== "json";
 
   if (urls.length === 0 || (isCompare && urls.length < 2)) {
-    console.error(isCompare ? "Error: compare needs two URLs" : "Error: provide a URL");
+    console.error(isCompare ? "Error: compare requires two URLs" : "Error: provide a URL");
     process.exit(1);
   }
 
@@ -91,10 +96,9 @@ try {
     let output;
     if (wantVoiceDoc) {
       output = result.voiceDoc;
-      // If no explicit output file and --voice flag, suggest a filename
-      if (!values.output && values.voice) {
-        const brandSlug = result.brand.toLowerCase().replace(/[^a-z0-9]/g, "-");
-        process.stderr.write(`\n  💾 Tip: save with --output ${brandSlug}-VOICE.md\n\n`);
+      if (!values.output) {
+        const slug = result.brand.toLowerCase().replace(/[^a-z0-9]/g, "-");
+        process.stderr.write(`\n  💾 Tip: save with --output ${slug}-VOICE.md\n\n`);
       }
     } else if (values.format === "json") {
       output = formatJSON(result);
